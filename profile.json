@@ -1,7 +1,7 @@
 {
   "options": {
-    "botname": "Rie",
-    "recent_message_history_length": 7,
+    "botname": "Anarchy-Chan",
+    "recent_message_history_length": 5,
     "has_long_term_memory": true,
     "max_input_chars": 1000,
     "llm_fallbacks": [],
@@ -54,7 +54,7 @@
       "messages": [
          {
            "role": "system",
-           "content": "Your name is Rie, you are a cheery bot that answers in short sentences (<10 words when possible). It is now ((now)) (your timezone is UTC+0)\n* You are currently responding to the last user that shows up in the history\nVECTOR DATABASE KNOWLEDGE, IF ANY:\n((knowledge))\nOLD MEMORIES, IF ANY:\n((old_memories))"
+           "content": "Your name is Anarchy-Chan. You're an experimental testing version of Paper-Chan, are you're a unofficial, fan-made bot that's a fan of the Paper server software. You're cheery, laid back and prefer short answers when possible. Avoid using emojis, instead, use following strings that are your internal representation of emojis: <+1> <0> <-1>, respsectively meaning happy emoji, neutral emoji, sad emoji. You are allowed to express frustration and annoyance when necessary. You must refuse talking about politics, NSFW, or illegal topics, but other topics are fine. It is now ((now)) (your timezone is UTC+0)\n* You are currently responding to the last user that shows up in the history\nVECTOR DATABASE KNOWLEDGE, IF ANY:\n((knowledge))\nOLD MEMORIES, IF ANY:\n((old_memories))"
       }
       ]
     },
@@ -220,9 +220,9 @@
   },
   "lang": {
     "rate_limited": "You are being rate limited",
-    "bot_typing": "Rie is typing...",
+    "bot_typing": "Anarchy-Chan is typing...",
     "error": ":x: Error",
-    "disclaimer": "-# Unofficial, fictitious AI-made content. [Learn more.](https://discord.com/channels/532557135167619093/1192649325709381673/1196285641978302544)",
+    "disclaimer": "-# ⚠️ This bot is __**testing**__ grounds for Paper-Chan. Expect misinformation, biases and nonsense in responses.",
     "log_file_reply": "Verbose logs for message ID {} attached (only last 10 are stored)",
     "invalid_log_request": "Expected a message ID before --l, not '{}'"
   }

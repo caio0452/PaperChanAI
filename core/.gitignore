@@ -1,0 +1,8 @@
+.lh/
+.history/
+__pycache__/
+knowledge/*
+app.log
+pyrightconfig.json
+.env
+.mypy_cache

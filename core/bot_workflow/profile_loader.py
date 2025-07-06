@@ -3,9 +3,15 @@ import logging
 from typing import Dict, List
 from pydantic import BaseModel, Field, field_validator, ValidationError
 
+<<<<<<< HEAD
 from ai_apis.providers import ProviderData
 from ai_apis.api_types import LLMRequestParams, Prompt
 from util.environment_vars import parse_api_key_in_config
+=======
+from ..ai_apis.providers import ProviderData
+from ..ai_apis.api_types import LLMRequestParams, Prompt
+from ..util.environment_vars import parse_api_key_in_config
+>>>>>>> cedb80f419dcaccec6d1fcdbcfa52d525983065c
 
 class FalImageGenModuleConfig(BaseModel):
     enabled: bool
@@ -19,19 +25,25 @@ class FalImageGenModuleConfig(BaseModel):
     def parse_api_key(cls, v):
         return parse_api_key_in_config(v)
 
-class Parameters(BaseModel):
-    botname: str
-    recent_message_history_length: int
+class MiscOptions(BaseModel):
+    llm_fallbacks: List[str] = Field(default_factory=list)
     only_ping_on_response_finish: bool
     enable_personality_rewrite: bool
     enable_knowledge_retrieval: bool
-    enable_long_term_memory: bool
     remove_trailing_newline: bool
     enable_image_viewing: bool
-    llm_fallbacks: List[str] = Field(default_factory=list, examples=["test", "aaa"])
+    botname: str
+
+class MemorySettings(BaseModel):
+    full_history_length: int
+    enable_long_term_memory: bool
+    short_term_history_length: int
+    enable_medium_term_memory: bool
+    medium_term_history_length: int
 
 class Profile(BaseModel):
-    options: Parameters
+    options: MiscOptions
+    memory_settings: MemorySettings
     prompts: Dict[str, Prompt]
     request_params: Dict[str, LLMRequestParams]
     lang: Dict[str, str]

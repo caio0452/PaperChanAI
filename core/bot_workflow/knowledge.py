@@ -6,9 +6,15 @@ import asyncio
 import hashlib
 import logging
 
+<<<<<<< HEAD
 from ai_apis.providers import ProviderData
 from bot_workflow.message_snapshot import MessageSnapshot
 from bot_workflow.vector_db import VectorDatabase, VectorDatabaseConnection
+=======
+from ..ai_apis.providers import ProviderData
+from ..chat.message_snapshot import MessageSnapshot
+from ..bot_workflow.vector_db import VectorDatabase, VectorDatabaseConnection
+>>>>>>> cedb80f419dcaccec6d1fcdbcfa52d525983065c
 
 class LongTermMemoryIndex:
     def __init__(self, _db_conn: VectorDatabaseConnection): 

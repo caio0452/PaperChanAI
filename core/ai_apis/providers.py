@@ -1,5 +1,9 @@
 from pydantic import BaseModel, Field, model_validator
+<<<<<<< HEAD
 from util.environment_vars import parse_api_key_in_config
+=======
+from ..util.environment_vars import parse_api_key_in_config
+>>>>>>> cedb80f419dcaccec6d1fcdbcfa52d525983065c
 from typing import List
 
 class ProviderData(BaseModel):

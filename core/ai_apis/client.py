@@ -3,8 +3,13 @@ import openai
 
 from typing import Any
 from abc import ABC, abstractmethod
+<<<<<<< HEAD
 from ai_apis.providers import ProviderData
 from ai_apis.api_types import LLMRequestParams, Prompt
+=======
+from ..ai_apis.providers import ProviderData
+from ..ai_apis.api_types import LLMRequestParams, Prompt
+>>>>>>> cedb80f419dcaccec6d1fcdbcfa52d525983065c
 
 class ContentModerator(ABC):
     @abstractmethod

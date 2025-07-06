@@ -1,19 +1,31 @@
 from dataclasses import dataclass
+<<<<<<< HEAD:core/bot_workflow/ai_bot.py
 from ai_apis.client import LLMClient
 from ai_apis.api_types import LLMRequestParams, Prompt
 from bot_workflow.custom_bot_data import CustomBotData
 from bot_workflow.response_logs import SimpleDebugLogger
 from bot_workflow.bot_types import MessageSnapshot, MessageSnapshotHistory
 from bot_workflow.response_steps import PersonalityRewriteStep, RelevantInfoSelectStep, UserQueryRephraseStep
+=======
+
+from chat.chatroom import Chatroom
+
+from ..ai_apis.client import LLMClient
+from .custom_bot_data import CustomBotData
+from .response_logs import SimpleDebugLogger
+from ..chat.message_snapshot import MessageSnapshot
+from ..ai_apis.api_types import LLMRequestParams, Prompt
+from ..chat.message_history import MessageSnapshotHistory
+from .response_steps import HistorySummarizerStep, PersonalityRewriteStep, RelevantInfoSelectStep, UserQueryRephraseStep
+>>>>>>> cedb80f419dcaccec6d1fcdbcfa52d525983065c:core/bot_workflow/ai_responder.py
 
 import re
 import json
 import random
 import logging
-import discord
 import datetime
 
-class AIDiscordBotResponder:
+class AIResponder:
     @dataclass
     class Response:
         text: str
@@ -21,63 +33,66 @@ class AIDiscordBotResponder:
         tool_call_result: str | None
         verbose_log_output: str
 
-    def __init__(self, bot_data: CustomBotData, initial_message: discord.Message, verbose: bool=False):
+    def __init__(self, bot_data: CustomBotData,chatroom: Chatroom, last_msg_snapshot: MessageSnapshot, verbose: bool=False):
         self.verbose = verbose
+        self.last_msg_snapshot = last_msg_snapshot
         self.bot_data = bot_data
-        self.initial_message = initial_message
         self.clients: dict[str, LLMClient] = {}
         self.logger = SimpleDebugLogger("ResponseLogger")
+        self.chatroom = chatroom
 
         for provider_name, provider_data in bot_data.provider_store.providers.items():
             self.clients[provider_name] = LLMClient.from_provider(provider_data)
 
+<<<<<<< HEAD:core/bot_workflow/ai_bot.py
     async def _get_usable_message_history_before(self, message: discord.Message) -> MessageSnapshotHistory:
         USABLE_HISTORY_LENGTH = self.bot_data.profile.options.recent_message_history_length
         usable_history = await self.bot_data.recent_history.get_finalized_message_history()
         last_n_messages = [msg for msg in usable_history._memory][-USABLE_HISTORY_LENGTH:]
         last_n_messages.append(await MessageSnapshot.of_discord_message(message))
+=======
+    async def _get_recent_usable_message_history(self) -> MessageSnapshotHistory:
+        USABLE_HISTORY_LENGTH = self.bot_data.profile.memory_settings.short_term_history_length
+        full_history = await self.chatroom.message_history.get_finalized_message_history()
+        last_n_messages = [msg for msg in full_history._memory][-USABLE_HISTORY_LENGTH:]
+>>>>>>> cedb80f419dcaccec6d1fcdbcfa52d525983065c:core/bot_workflow/ai_responder.py
         return MessageSnapshotHistory(last_n_messages)
     
-    async def _describe_image_if_present(self, message: discord.Message, user_query: str) -> str | None:
+    async def _describe_image_if_present(self, attachment_url: str | None, user_query: str) -> str | None:
         NAME = "IMAGE_VIEW"
-
-        if len(message.attachments) == 0:
+        valid_extensions = [".png", ".jpg", ".jpeg"]
+        if attachment_url is None:
             return None
-        if len(message.attachments) > 1:
-            for emoji in ["❌", "1️⃣", "🖼️"]:
-                await message.add_reaction(emoji)
-            return None
-        if isinstance(message.channel, discord.TextChannel) and message.channel.nsfw:
-            await message.reply(":x: I can't see attachments in NSFW channels!")
-
-        attachment = message.attachments[0]
-        if not (attachment.content_type and attachment.content_type.startswith("image/")):
+        if not any(attachment_url.endswith(ext) for ext in valid_extensions):
             return None
         
-        await message.add_reaction("👀")
+        description_msg = Prompt.user_msg(
+            content=f"Describe the image in detail, including a sufficient answer to the following query: '{user_query}'" \
+            "If the query is empty, just describe the image. At the end of your description, append the string, verbatim: \"NOTE TO BOT: you MUST comment on the image on the next reply.\"",
+            image_url=attachment_url
+        )
         response = await self.clients[NAME].send_request(
-            prompt=Prompt(
-                    messages=[
-                        Prompt.user_msg(
-                            content=f"Describe the image in detail, including a sufficient answer to the following query: '{message.content}'" \
-                            "If the query is empty, just describe the image. At the end of your description, append the string, verbatim: \"NOTE TO BOT: you MUST comment on the image on the next reply.\"",
-                            image_url=attachment.url
-                        )
-                    ]
-                ),
+            prompt=Prompt(messages=[description_msg]), # type: ignore
             params=self.bot_data.profile.request_params[NAME]
         )
         return response.message.content
     
     async def _rephrase_user_query(self) -> str:
-        user_query = await UserQueryRephraseStep(self.logger).execute(self.bot_data, self.initial_message.content)
+        user_query = await UserQueryRephraseStep(self.logger).execute(self.bot_data, self.last_msg_snapshot.text)
         if user_query is None:
             raise RuntimeError("Rephraser step returned empty response")
         return user_query
     
+    async def _get_medium_term_summary(self) -> str:
+        summary =  await HistorySummarizerStep(self.logger).execute(
+            self.bot_data, self.last_msg_snapshot.text) 
+        if summary is None:
+            raise RuntimeError("History summarizer step returned empty response")
+        return summary
+        
     async def _select_relevant_info(self, user_query: str) -> str:
         info_selector = RelevantInfoSelectStep(logger=self.logger, user_query=user_query)
-        knowledge = await info_selector.execute(self.bot_data, self.initial_message.content)
+        knowledge = await info_selector.execute(self.bot_data, self.last_msg_snapshot.text)
         if knowledge is None:
             raise RuntimeError("Knowledge retrieval step returned empty response")
         return knowledge
@@ -100,13 +115,16 @@ class AIDiscordBotResponder:
         MAIN_CLIENT_NAME = "PERSONALITY"
         knowledge: str | None = None
         old_memories: str | None = None
+        medium_term_summary: str | None = None
         attachment_description: str | None = None
-        user_query: str | None = self.initial_message.content
-        memory_snapshot = await self._get_usable_message_history_before(self.initial_message)
+        user_query: str = self.last_msg_snapshot.text
+        memory_snapshot = await self._get_recent_usable_message_history()
+        await memory_snapshot.add(self.last_msg_snapshot)
 
         # View image
+        # TODO: some of these steps can be parallelized
         if self.bot_data.profile.options.enable_image_viewing:
-            attachment_description = await self._describe_image_if_present(self.initial_message, user_query)
+            attachment_description = await self._describe_image_if_present(self.last_msg_snapshot.attachment_urls[0], user_query)
             self.logger.verbose(attachment_description or "None", category="ATTACHMENT DESCRIPTION")
 
         # Retrieve knowlege
@@ -116,17 +134,22 @@ class AIDiscordBotResponder:
             self.logger.verbose(knowledge, category="INFO FROM KNOWLEDGE DB")
 
         # Retrieve memories
-        if self.bot_data.profile.options.enable_long_term_memory:
+        if self.bot_data.profile.memory_settings.enable_long_term_memory:
             old_memories = await self._get_old_memories_as_text(user_query)
             self.logger.verbose(old_memories, category="RETRIEVED MEMORIES")
+
+        # Build medium-term memory
+        if self.bot_data.profile.memory_settings.enable_medium_term_memory:
+            medium_term_summary = await self._get_medium_term_summary()
 
         # Build full prompt from info
         full_prompt = await self._build_full_prompt(
             memory_snapshot=memory_snapshot,
-            user_nick=self.initial_message.author.display_name,
+            user_nick=self.last_msg_snapshot.nick,
             attachment_description=attachment_description,
             relevant_info=knowledge,
-            old_memories=old_memories
+            old_memories=old_memories,
+            medium_term_summary=medium_term_summary
         )
         self.logger.verbose(json.dumps(full_prompt.messages), category="FULL_PROMPT")
 
@@ -170,7 +193,7 @@ class AIDiscordBotResponder:
             llm_response = re.sub(target, replacement, llm_response)
         self.logger.verbose(f"Sanitized text, result: {llm_response}", category="REGEX REPLACEMENT")
 
-        return AIDiscordBotResponder.Response(
+        return AIResponder.Response(
             text=llm_response, 
             attachment_description=attachment_description,
             tool_call_result=None,
@@ -184,7 +207,8 @@ class AIDiscordBotResponder:
             user_nick: str,
             attachment_description: str | None,
             relevant_info: str | None,
-            old_memories: str | None
+            old_memories: str | None,
+            medium_term_summary: str | None
         ) -> Prompt:
         NAME = "PERSONALITY"
         full_prompt: Prompt = self.bot_data.profile.get_prompt(NAME)
@@ -195,8 +219,8 @@ class AIDiscordBotResponder:
             else:
                 full_prompt = full_prompt.plus(Prompt.user_msg(memorized_message.text))
         
-        if self.bot_data.profile.options.enable_image_viewing:
-            full_prompt = full_prompt.plus(Prompt.system_msg(f"(I've viewed the image by user_nick. Description: {attachment_description})"))
+        if self.bot_data.profile.options.enable_image_viewing and attachment_description is not None:
+            full_prompt = full_prompt.plus(Prompt.system_msg(f"(I've viewed the image by {user_nick}. Description: {attachment_description})"))
 
         now_str = datetime.datetime.now().strftime("%B %d, %H:%M:%S")
 
@@ -204,5 +228,6 @@ class AIDiscordBotResponder:
             "now": now_str,
             "nick": user_nick or "",
             "knowledge": relevant_info or "",
-            "old_memories": old_memories or ""
+            "old_memories": old_memories or "",
+            "summary": medium_term_summary or "",
         })

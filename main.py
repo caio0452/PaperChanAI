@@ -3,15 +3,16 @@ import logging
 import core.util.logging_setup as logs
 
 from discord.ext import commands
-from core.bot_workflow.ai_bot import CustomBotData
-from core.bot_workflow.profile_loader import Profile
-from core.ai_apis.providers import ProviderDataStore
-from core.util.environment_vars import get_environment_var
-from core.bot_workflow.discord_chat_handler import DiscordChatHandler
-from core.bot_workflow.knowledge import KnowledgeIndex, LongTermMemoryIndex
-
 from commands.sync_command_tree import SyncCommand
+from core.chat.discord_bridge import DiscordBridge
+from core.ai_apis.providers import ProviderDataStore
+from core.bot_workflow.profile_loader import Profile
+from core.chat.base_chat_handler import AsyncEventBus
 from commands.image_gen_command import ImageGenCommand
+from core.bot_workflow.ai_responder import CustomBotData
+from core.util.environment_vars import get_environment_var
+from core.chat.discord_chat_handler import DiscordChatHandler
+from core.bot_workflow.knowledge import KnowledgeIndex, LongTermMemoryIndex
 
 logs.setup()
 
@@ -30,7 +31,7 @@ class DiscordBot:
     async def setup_chatbot(self):
         embeddings_provider = self.profile.providers["EMBEDDINGS"]
         self.knowledge = await KnowledgeIndex.from_provider(embeddings_provider)
-        if self.profile.options.enable_long_term_memory:
+        if self.profile.memory_settings.enable_long_term_memory:
             self.long_term_memory: LongTermMemoryIndex | None = await LongTermMemoryIndex.from_provider(embeddings_provider)
         else:
             self.long_term_memory = None
@@ -41,18 +42,23 @@ class DiscordBot:
         ) # TODO: There should be required providers
         if self.bot.user is None:
             raise RuntimeError("Could not initialize bot: bot user is None")
-        await self.bot.add_cog(DiscordChatHandler(
-            discord_bot=self.bot, 
-            ai_bot_data=CustomBotData(
+        event_bus = AsyncEventBus()
+        bridge = DiscordBridge(self.bot, bus=event_bus)
+        await self.bot.add_cog(
+            bridge,
+        )
+        self.chat_handler = DiscordChatHandler(
+                event_bus, 
+                CustomBotData(
                 name=self.profile.options.botname, 
                 profile=self.profile, 
                 provider_store=provider_store,
                 long_term_memory=self.long_term_memory,
                 knowledge=self.knowledge,
                 discord_bot_id=self.bot.user.id,
-                memory_length=50
+                memory_length=50            
             )
-        ))
+        )
 
     async def setup_commands(self):
         # await self.bot.add_cog(SearchCommand(bot=self.bot,conn=conn))

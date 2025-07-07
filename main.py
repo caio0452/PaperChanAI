@@ -59,6 +59,7 @@ class DiscordBot:
                 memory_length=50            
             )
         )
+        event_bus.start()
 
     async def setup_commands(self):
         # await self.bot.add_cog(SearchCommand(bot=self.bot,conn=conn))

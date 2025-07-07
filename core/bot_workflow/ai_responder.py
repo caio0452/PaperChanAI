@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
-from chat.chatroom import Chatroom
-
+from ..chat.chatroom import Chatroom
 from ..ai_apis.client import LLMClient
 from .custom_bot_data import CustomBotData
 from .response_logs import SimpleDebugLogger

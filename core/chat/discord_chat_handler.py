@@ -1,5 +1,6 @@
 import io
 import discord
+import datetime
 from typing import Any
 
 from . import message_processing_util
@@ -46,7 +47,7 @@ class DiscordChatHandler(BaseChatHandler):
             files=[discord.File(log_file, filename=filename)]
         )
 
-    async def _send_response(self, text: str, original_event: MessageSnapshotEvent, typing_placeholder: Any | None) -> MessageSnapshot:
+    async def _send_response(self, text: str, original_event: MessageSnapshotEvent, typing_placeholder: Any | None = None) -> MessageSnapshot:
         typing_msg = typing_placeholder
         disclaimer = self.ai_bot.profile.lang.get("disclaimer", "")
         max_chunk_length = 1800 - len(disclaimer)
@@ -70,7 +71,16 @@ class DiscordChatHandler(BaseChatHandler):
         else:
             last_msg = await self._get_discord_msg(original_event).reply(code_balanced_chunks[0])
 
+        # TODO: handle attachments
         for chunk in code_balanced_chunks[1:]:
-            last_msg = await last_msg.reply(content=chunk, silent=not ping)
+            last_msg: discord.Message = await last_msg.reply(content=chunk, silent=not ping)
 
-        return await MessageSnapshot.of_discord_message(last_msg)
+        return MessageSnapshot(
+            text=text,
+            nick=self.ai_bot.name,
+            is_bot=True,
+            sender_id=self.ai_bot.discord_bot_id,
+            message_id=last_msg.id,
+            sent=datetime.datetime.now(),
+            attachment_urls=[]
+        )

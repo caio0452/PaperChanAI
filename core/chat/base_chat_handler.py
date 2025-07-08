@@ -127,7 +127,7 @@ class BaseChatHandler(abc.ABC):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    async def _send_response(self, text: str, original_event: MessageSnapshotEvent, typing_placeholder: Any | None) -> MessageSnapshot:
+    async def _send_response(self, text: str, original_event: MessageSnapshotEvent, typing_placeholder: Any | None = None) -> MessageSnapshot:
         raise NotImplementedError()
     
     @abc.abstractmethod

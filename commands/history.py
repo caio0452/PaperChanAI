@@ -24,7 +24,8 @@ class ViewHistoryCommand(commands.Cog):
         )
         embed.set_author(name="Info")
 
-        last_5 = self.ai_bot_data.full_history.backing_history.as_list()[:-6:-1]
+        last_5 = self.ai_bot_data.full_history.backing_history.as_list()[-5:]
+        last_5.reverse()
         for snapshot in last_5:
             time = snapshot.sent.strftime("%d/%m/%Y %H:%M:%S")
             pending = self.ai_bot_data.full_history.is_pending(snapshot.message_id)

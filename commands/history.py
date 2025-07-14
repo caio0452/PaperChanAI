@@ -15,7 +15,7 @@ class ViewHistoryCommand(commands.Cog):
         name="chat_history", 
         description="View the chat history"
     )
-    async def chat_history(self, interaction: discord.Interaction, query: str) -> None:
+    async def chat_history(self, interaction: discord.Interaction) -> None:
         await interaction.response.defer()
         await interaction.followup.send(embed=Embed(title="History"))
         embed = discord.Embed(title="Chat History",

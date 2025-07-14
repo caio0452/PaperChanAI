@@ -3,6 +3,7 @@ import logging
 import core.util.logging_setup as logs
 
 from discord.ext import commands
+from commands.history import ViewHistoryCommand
 from commands.sync_command_tree import SyncCommand
 from core.chat.discord_bridge import DiscordBridge
 from core.ai_apis.providers import ProviderDataStore
@@ -47,17 +48,18 @@ class DiscordBot:
         await self.bot.add_cog(
             bridge,
         )
+        self.ai_bot_data = CustomBotData(
+            name=self.profile.options.botname, 
+            profile=self.profile, 
+            provider_store=provider_store,
+            long_term_memory=self.long_term_memory,
+            knowledge=self.knowledge,
+            discord_bot_id=self.bot.user.id,
+            memory_length=50            
+        )
         self.chat_handler = DiscordChatHandler(
-                event_bus, 
-                CustomBotData(
-                name=self.profile.options.botname, 
-                profile=self.profile, 
-                provider_store=provider_store,
-                long_term_memory=self.long_term_memory,
-                knowledge=self.knowledge,
-                discord_bot_id=self.bot.user.id,
-                memory_length=50            
-            )
+            event_bus, 
+            self.ai_bot_data
         )
         event_bus.start()
 
@@ -65,6 +67,7 @@ class DiscordBot:
         # await self.bot.add_cog(SearchCommand(bot=self.bot,conn=conn))
         # await self.bot.add_cog(FindClosePreset(presets_manager=await preset_queries.manager(OAICompatibleProviderData(embeddings_client)), bot=self.bot))
         await self.bot.add_cog(SyncCommand(bot=self.bot))
+        await self.bot.add_cog(ViewHistoryCommand(discord_bot=self.bot, ai_bot_data=self.ai_bot_data, bot_profile=self.profile))
         # await self.bot.add_cog(TranslateCommand(bot=self.bot))
         # await self.bot.add_cog(RewriteCommand(bot=self.bot))
         

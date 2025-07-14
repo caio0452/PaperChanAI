@@ -17,7 +17,6 @@ class ViewHistoryCommand(commands.Cog):
     )
     async def chat_history(self, interaction: discord.Interaction) -> None:
         await interaction.response.defer()
-        await interaction.followup.send(embed=Embed(title="History"))
         embed = discord.Embed(title="Chat History",
             colour=0x00b0f4,
             timestamp=datetime.now()
@@ -32,3 +31,5 @@ class ViewHistoryCommand(commands.Cog):
             name = f"{time} {'(PENDING)' if pending else ''}"
             value = snapshot.text[:1021]
             embed.add_field(name=name, value=value, inline=False)
+            
+        await interaction.followup.send(embed=embed)

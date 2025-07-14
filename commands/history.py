@@ -2,8 +2,8 @@ import discord
 from datetime import datetime
 from discord import Embed, app_commands
 from discord.ext import commands
-from ..core.bot_workflow.ai_responder import CustomBotData
-from ..core.bot_workflow.profile_loader import Profile
+from core.bot_workflow.ai_responder import CustomBotData
+from core.bot_workflow.profile_loader import Profile
 
 class ViewHistoryCommand(commands.Cog):
     def __init__(self, discord_bot: commands.Bot, ai_bot_data: CustomBotData, bot_profile: Profile) -> None:

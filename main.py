@@ -1,5 +1,6 @@
 import discord
 import logging
+from core.bot_workflow.custom_bot_data import AIBotData
 import core.util.logging_setup as logs
 
 from discord.ext import commands
@@ -24,6 +25,7 @@ class DiscordBot:
         self.bot = commands.Bot(command_prefix='r!', intents=intents)
         self.profile = Profile.from_file("profile.json")
         self.bot.event(self.on_ready)
+        self.ai_bot_data: AIBotData | None = None
 
     def run(self):
         bot_token = get_environment_var('AI_BOT_TOKEN', required=True)
@@ -78,10 +80,10 @@ class DiscordBot:
         pass
 
     async def on_ready(self):
-        logging.info("Setting up commands...")
-        await self.setup_commands()
         logging.info("Creating chatbot...")
         await self.setup_chatbot()
+        logging.info("Setting up commands...")
+        await self.setup_commands()
         logging.info("Indexing knowledge...")
         await self.knowledge.index_from_folder("brain_content/knowledge")
         logging.info(f'Logged in as {self.bot.user}')

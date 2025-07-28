@@ -1,20 +1,22 @@
 import discord
 import logging
-from core.bot_workflow.custom_bot_data import AIBotData
-import core.util.logging_setup as logs
+import reynard_ai.util.logging_setup as logs
 
 from discord.ext import commands
+
 from commands.history import ViewHistoryCommand
 from commands.sync_command_tree import SyncCommand
-from core.chat.discord_bridge import DiscordBridge
-from core.ai_apis.providers import ProviderDataStore
-from core.bot_workflow.profile_loader import Profile
-from core.chat.base_chat_handler import AsyncEventBus
 from commands.image_gen_command import ImageGenCommand
-from core.bot_workflow.ai_responder import CustomBotData
-from core.util.environment_vars import get_environment_var
-from core.chat.discord_chat_handler import DiscordChatHandler
-from core.bot_workflow.knowledge import KnowledgeIndex, LongTermMemoryIndex
+
+from reynard_ai.chat.discord_bridge import DiscordBridge
+from reynard_ai.ai_apis.providers import ProviderDataStore
+from reynard_ai.bot_workflow.profile_loader import Profile
+from reynard_ai.chat.base_chat_handler import AsyncEventBus
+from reynard_ai.bot_workflow.custom_bot_data import AIBotData
+from reynard_ai.bot_workflow.ai_responder import CustomBotData
+from reynard_ai.util.environment_vars import get_environment_var
+from reynard_ai.chat.discord_chat_handler import DiscordChatHandler
+from reynard_ai.bot_workflow.knowledge import KnowledgeIndex, LongTermMemoryIndex
 
 logs.setup()
 

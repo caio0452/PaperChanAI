@@ -1,9 +1,12 @@
 import discord
 from datetime import datetime
+from dotenv import load_dotenv
 from discord import app_commands
 from discord.ext import commands
 from reynard_ai.bot_data.ai_bot import AIBot
 from reynard_ai.bot_data.bot_profile import Profile
+
+load_dotenv()
 
 class ViewHistoryCommand(commands.Cog):
     def __init__(self, discord_bot: commands.Bot, ai_bot_data: AIBot, bot_profile: Profile) -> None:

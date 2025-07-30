@@ -7,9 +7,10 @@ import traceback
 
 from discord import app_commands
 from discord.ext import commands
+from reynard_ai.bot_data.bot_profile import Profile
 from reynard_ai.util.rate_limits import RateLimit, RateLimiter
 from reynard_ai.ai_apis.client import LLMClient, LLMRequestParams
-from reynard_ai.bot_data.bot_profile import Profile
+
 
 class ImageGenCommand(commands.Cog):
     def __init__(self, discord_bot: commands.Bot, bot_profile: Profile) -> None:

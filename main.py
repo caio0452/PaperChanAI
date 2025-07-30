@@ -8,15 +8,14 @@ from commands.history import ViewHistoryCommand
 from commands.sync_command_tree import SyncCommand
 from commands.image_gen_command import ImageGenCommand
 
+from reynard_ai.bot_data.ai_bot import AIBot
+from reynard_ai.bot_data.bot_profile import Profile
 from reynard_ai.chat.discord_bridge import DiscordBridge
 from reynard_ai.ai_apis.providers import ProviderDataStore
-from reynard_ai.bot_workflow.profile_loader import Profile
 from reynard_ai.chat.base_chat_handler import AsyncEventBus
-from reynard_ai.bot_workflow.custom_bot_data import AIBotData
-from reynard_ai.bot_workflow.ai_responder import CustomBotData
 from reynard_ai.util.environment_vars import get_environment_var
 from reynard_ai.chat.discord_chat_handler import DiscordChatHandler
-from reynard_ai.bot_workflow.knowledge import KnowledgeIndex, LongTermMemoryIndex
+from reynard_ai.bot_data.knowledge import KnowledgeIndex, LongTermMemoryIndex
 
 logs.setup()
 
@@ -27,7 +26,7 @@ class DiscordBot:
         self.bot = commands.Bot(command_prefix='r!', intents=intents)
         self.profile = Profile.from_file("profile.json")
         self.bot.event(self.on_ready)
-        self.ai_bot_data: AIBotData | None = None
+        self.ai_bot_data: AIBot | None = None
 
     def run(self):
         bot_token = get_environment_var('AI_BOT_TOKEN', required=True)
@@ -48,11 +47,11 @@ class DiscordBot:
         if self.bot.user is None:
             raise RuntimeError("Could not initialize bot: bot user is None")
         event_bus = AsyncEventBus()
-        bridge = DiscordBridge(self.bot, bus=event_bus)
+        bridge = DiscordBridge(self.bot, bus=event_bus, known_chatrooms=[])
         await self.bot.add_cog(
             bridge,
         )
-        self.ai_bot_data = CustomBotData(
+        self.ai_bot_data = AIBot(
             name=self.profile.options.botname, 
             profile=self.profile, 
             provider_store=provider_store,
@@ -76,7 +75,7 @@ class DiscordBot:
         # await self.bot.add_cog(RewriteCommand(bot=self.bot))
         
         if bot.profile.fal_image_gen_config.enabled:
-            await self.bot.add_cog(ImageGenCommand(discord_bot=self.bot, bot_profile=self.profile, fal_config=bot.profile.fal_image_gen_config))
+            await self.bot.add_cog(ImageGenCommand(discord_bot=self.bot, bot_profile=self.profile))
         else:
             logging.info("Image generation using FAL.AI is disabled")
         pass

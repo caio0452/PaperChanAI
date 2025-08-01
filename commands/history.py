@@ -31,7 +31,7 @@ class ViewHistoryCommand(commands.Cog):
         MIN_MSGS_PER_EMBED = 5
         MAX_MSGS_PER_EMBED = 15
         for i, snapshot in enumerate(last_msgs):
-            time = snapshot.sent.strftime("🕙 [%d/%m %H:%M:%S]")
+            time = snapshot.sent.strftime("🕙 %d/%m %H:%M:%S ━━━━━━━━━━")
             pending = self.ai_bot_data.short_term_memory.is_pending(snapshot.message_id)
             name = f"{time} {'- PENDING' if pending else ''}"
             field_txt = snapshot.text[:1021]

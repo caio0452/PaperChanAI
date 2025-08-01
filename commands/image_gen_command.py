@@ -11,7 +11,6 @@ from reynard_ai.bot_data.bot_profile import Profile
 from reynard_ai.util.rate_limits import RateLimit, RateLimiter
 from reynard_ai.ai_apis.client import LLMClient, LLMRequestParams
 
-
 class ImageGenCommand(commands.Cog):
     def __init__(self, discord_bot: commands.Bot, bot_profile: Profile) -> None:
         self.discord_bot = discord_bot

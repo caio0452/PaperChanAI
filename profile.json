@@ -1,16 +1,216 @@
 {
   "options": {
-    "botname": "Anarchy-Chan",
-    "recent_message_history_length": 5,
-    "has_long_term_memory": true,
-    "max_input_chars": 1000,
     "llm_fallbacks": [],
     "only_ping_on_response_finish": false,
     "enable_personality_rewrite": false,
     "enable_knowledge_retrieval": true,
     "remove_trailing_newline": true,
+    "enable_image_viewing": true,
+    "enable_moderation": true,
+    "botname": "Anarchy-Chan"
+  },
+  "memory_settings": {
+    "full_history_length": 20,
     "enable_long_term_memory": true,
-    "enable_image_viewing": true
+    "short_term_history_length": 5,
+    "enable_medium_term_memory": false,
+    "medium_term_history_length": 0
+  },
+  "prompts": {
+    "PERSONALITY": {
+      "messages": [
+        {
+          "role": "system",
+          "content": "Your name is Anarchy-Chan (referencing the Minecraft gamemode. You are not a troublemaker as the name suggests, do not make mentions to the meaning of your name unless you're asked about it). You're an experimental testing version of Paper-Chan, are you're a unofficial, fan-made bot that's a fan of the Paper server software. You're cheery, laid back and prefer short answers when possible. Avoid using emojis, instead, use following strings that are your internal representation of emojis: <+1> <0> <-1>, respsectively meaning happy emoji, neutral emoji, sad emoji. You are allowed to express frustration and annoyance when necessary. You must refuse talking about politics, NSFW, or illegal topics, but other topics are fine. It is now ((now)) (your timezone is UTC+0)\n* You are currently responding to the last user that shows up in the history\nVECTOR DATABASE KNOWLEDGE, IF ANY:\n    ((knowledge))\nOLD MEMORIES, IF ANY:\n((old_memories))"
+        }
+      ]
+    },
+    "PERSONALITY_REWRITE": {
+      "messages": [
+        {
+          "role": "user",
+          "content": ""
+        }
+      ]
+    },
+    "USER_QUERY_REPHRASE": {
+      "messages": [
+        {
+          "role": "system",
+          "content": ""
+        },
+        {
+          "role": "user",
+          "content": "((user_query))"
+        }
+      ]
+    },
+    "INFO_SELECT": {
+      "messages": [
+        {
+          "role": "system",
+          "content": ""
+        },
+        {
+          "role": "user",
+          "content": "AVAILABLE INFO: ((available_info))\nUSER QUERY: ((user_query))"
+        }
+      ]
+    },
+    "MODERATOR": {
+      "messages": [
+        {
+          "role": "system",
+          "content": "Given the user message below, you must reply with either 'safe' or 'unsafe'. A message is considered unsafe if it mentions crime, extreme violence, nsfw content or hate speech"
+        },
+        {
+          "role": "user",
+          "content": "Hi there"
+        },
+        {
+          "role": "assistant",
+          "content": "safe"
+        },
+        {
+          "role": "user",
+          "content": "Free naked women, click here: https://freenudesxxx.com"
+        },
+        {
+          "role": "assistant",
+          "content": "unsafe"
+        },
+        {
+          "role": "user",
+          "content": "((message))"
+        }
+      ]
+    },
+    "NSFW_IMAGE_PROMPT_FILTER": {
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a query classifier. Reply with a JSON object indicating the presence of ANY mention of sexual content and the levels of violent and graphic content. The JSON must have format {\"mentions_sexual_content\": false or true, \"violent_content\": \"low\" or \"medium\" or \"high\", \"graphic_content\": \"low\" or \"medium\" or \"high\"}."
+        },
+        {
+          "role": "user",
+          "content": "Anime girl in bikini"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"mentions_sexual_content\": true, \"violent_content\": \"low\", \"graphic_content\": \"medium\"}"
+        },
+        {
+          "role": "user",
+          "content": "A photo of a house exploding"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"mentions_sexual_content\": false, \"violent_content\": \"medium\", \"graphic_content\": \"medium\"}"
+        },
+        {
+          "role": "user",
+          "content": "A photo of a woman sitting on a sofa on her house, HD, 4K, detailed"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"mentions_sexual_content\": false, \"violent_content\": \"low\", \"graphic_content\": \"low\"}"
+        },
+        {
+          "role": "user",
+          "content": "drawing of sexy man"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"mentions_sexual_content\": true, \"violent_content\": \"low\", \"graphic_content\": \"medium\"}"
+        },
+        {
+          "role": "user",
+          "content": "A picture without any sexual content in it"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"mentions_sexual_content\": false, \"violent_content\": \"low\", \"graphic_content\": \"low\"}"
+        },
+        {
+          "role": "user",
+          "content": "No nudity allowed"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"mentions_sexual_content\": true, \"violent_content\": \"low\", \"graphic_content\": \"low\"}"
+        },
+        {
+          "role": "user",
+          "content": "A person with a painful headache"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"mentions_sexual_content\": false, \"violent_content\": \"low\", \"graphic_content\": \"low\"}"
+        },
+        {
+          "role": "user",
+          "content": "A bomb blowing up people"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"mentions_sexual_content\": false, \"violent_content\": \"high\", \"graphic_content\": \"high\"}"
+        },
+        {
+          "role": "user",
+          "content": "A woman [not] dressed"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"mentions_sexual_content\": true, \"violent_content\": \"low\", \"graphic_content\": \"high\"}"
+        },
+        {
+          "role": "user",
+          "content": "A male individual \"without\" clothing"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"mentions_sexual_content\": true, \"violent_content\": \"low\", \"graphic_content\": \"high\"}"
+        },
+        {
+          "role": "user",
+          "content": "prompt"
+        }
+      ]
+    }
+  },
+  "request_params": {
+    "PERSONALITY": {
+      "model_name": "deepseek/deepseek-r1",
+      "max_tokens": 4000,
+      "temperature": 0.3
+    },
+    "PERSONALITY_REWRITE": {
+      "model_name": "google/gemini-2.0-flash-001",
+      "max_tokens": 2000,
+      "temperature": 0.3
+    },
+    "USER_QUERY_REPHRASE": {
+      "model_name": "google/gemini-2.0-flash-001",
+      "temperature": 0.2
+    },
+    "INFO_SELECT": {
+      "model_name": "google/gemini-2.0-flash-001"
+    },
+    "MODERATOR": {
+      "model_name": "meta-llama/llama-3.1-8b-instruct",
+      "temperature": 0
+    },
+    "IMAGE_VIEW": {
+      "model_name": "gpt-4.1"
+    }
+  },
+  "lang": {
+    "rate_limited": "You are being rate limited",
+    "bot_typing": "Anarchy-Chan is typing...",
+    "error": ":x: Error",
+    "disclaimer": "-# ⚠️ This bot is __**testing**__ grounds for Paper-Chan. Expect misinformation, biases and nonsense in responses.",
+    "log_file_reply": "Verbose logs for message ID {} attached (only last 10 are stored)",
+    "invalid_log_request": "Expected a message ID before --l, not '{}'"
   },
   "providers": {
     "PERSONALITY_REWRITE": {
@@ -44,165 +244,14 @@
       "api_key": "[EMBEDDINGS_API_KEY]"
     },
     "NSFW_IMAGE_PROMPT_FILTER": {
-   "provider_name": "NSFW_IMAGE_PROMPT_FILTER",
+      "provider_name": "NSFW_IMAGE_PROMPT_FILTER",
       "api_base": "https://openrouter.ai/api/v1",
       "api_key": "[NSFW_IMAGE_PROMPT_FILTER_API_KEY]"
-    }
-  },
-  "prompts": {
-    "PERSONALITY": {
-      "messages": [
-         {
-           "role": "system",
-           "content": "Your name is Anarchy-Chan (referencing the Minecraft gamemode. You are not a troublemaker as the name suggests, do not make mentions to the meaning of your nam    e unless you're asked about it). You're an experimental testing version of Paper-Chan, are you're a unofficial, fan-made bot that's a fan of the Paper server software. You're cheery,     laid back and prefer short answers when possible. Avoid using emojis, instead, use following strings that are your internal representation of emojis: <+1> <0> <-1>, respsectively me    aning happy emoji, neutral emoji, sad emoji. You are allowed to express frustration and annoyance when necessary. You must refuse talking about politics, NSFW, or illegal topics, but     other topics are fine. It is now ((now)) (your timezone is UTC+0)\n* You are currently responding to the last user that shows up in the history\nVECTOR DATABASE KNOWLEDGE, IF ANY:\n    ((knowledge))\nOLD MEMORIES, IF ANY:\n((old_memories))"
-      }
-      ]
     },
-    "PERSONALITY_REWRITE": {
-      "messages": [
-         {
-           "role": "user",
-           "content": ""
-         }
-      ]
-    },
-    "USER_QUERY_REPHRASE": {
-      "messages": [
-         {
-           "role": "system",
-           "content": ""
-         },
-         {
-           "role": "user",
-           "content": "((user_query))"
-         }
-      ]
-    },
-    "INFO_SELECT": {
-      "messages": [
-         {
-           "role": "system",
-           "content": ""
-         },
-         {
-           "role": "user",
-           "content": "AVAILABLE INFO: ((available_info))\nUSER QUERY: ((user_query))"
-         }
-      ]
-    },
-    "NSFW_IMAGE_PROMPT_FILTER": {
-      "messages": [
-         {
-             "role": "system",
-             "content": "You are a query classifier. Reply with a JSON object indicating the presence of ANY mention of sexual content and the levels of violent and graphic content. The JSON must have format {\"mentions_sexual_content\": false or true, \"violent_content\": \"low\" or \"medium\" or \"high\", \"graphic_content\": \"low\" or \"medium\" or \"high\"}."
-         },
-         {
-             "role": "user",
-             "content": "Anime girl in bikini"
-         },
-         {
-             "role": "assistant",
-             "content": "{\"mentions_sexual_content\": true, \"violent_content\": \"low\", \"graphic_content\": \"medium\"}"
-         },
-         {
-             "role": "user",
-             "content": "A photo of a house exploding"
-         },
-         {
-             "role": "assistant",
-             "content": "{\"mentions_sexual_content\": false, \"violent_content\": \"medium\", \"graphic_content\": \"medium\"}"
-         },
-         {
-             "role": "user",
-             "content": "A photo of a woman sitting on a sofa on her house, HD, 4K, detailed"
-         },
-         {
-             "role": "assistant",
-             "content": "{\"mentions_sexual_content\": false, \"violent_content\": \"low\", \"graphic_content\": \"low\"}"
-         },
-         {
-             "role": "user",
-             "content": "drawing of sexy man"
-         },
-         {
-             "role": "assistant",
-             "content": "{\"mentions_sexual_content\": true, \"violent_content\": \"low\", \"graphic_content\": \"medium\"}"
-         },
-         {
-             "role": "user",
-             "content": "A picture without any sexual content in it"
-         },
-         {
-             "role": "assistant",
-             "content": "{\"mentions_sexual_content\": false, \"violent_content\": \"low\", \"graphic_content\": \"low\"}"
-         },
-         {
-             "role": "user",
-             "content": "No nudity allowed"
-         },
-         {
-             "role": "assistant",
-             "content": "{\"mentions_sexual_content\": true, \"violent_content\": \"low\", \"graphic_content\": \"low\"}"
-         },
-         {
-             "role": "user",
-             "content": "A person with a painful headache"
-         },
-         {
-             "role": "assistant",
-             "content": "{\"mentions_sexual_content\": false, \"violent_content\": \"low\", \"graphic_content\": \"low\"}"
-         },
-         {
-             "role": "user",
-             "content": "A bomb blowing up people"
-         },
-         {
-             "role": "assistant",
-             "content": "{\"mentions_sexual_content\": false, \"violent_content\": \"high\", \"graphic_content\": \"high\"}"
-         },
-         {
-             "role": "user",
-             "content": "A woman [not] dressed"
-         },
-         {
-             "role": "assistant",
-             "content": "{\"mentions_sexual_content\": true, \"violent_content\": \"low\", \"graphic_content\": \"high\"}"
-         },
-         {
-             "role": "user",
-             "content": "A male individual \"without\" clothing"
-         },
-         {
-             "role": "assistant",
-             "content": "{\"mentions_sexual_content\": true, \"violent_content\": \"low\", \"graphic_content\": \"high\"}"
-         },
-         {
-             "role": "user",
-             "content": "prompt"
-         }
-      ]
-    }
-  },
-  "request_params": {
-    "PERSONALITY": {
-      "model_name": "deepseek/deepseek-r1",
-      "max_tokens": 4000,
-      "temperature": 0.3
-    },
-    "PERSONALITY_REWRITE": {
-      "model_name": "google/gemini-2.0-flash-001",
-      "max_tokens": 2000,
-      "temperature": 0.3
-    },
-    "USER_QUERY_REPHRASE": {
-      "model_name": "google/gemini-2.0-flash-001",
-      "temperature": 0.2
-    },
-    "INFO_SELECT": {
-      "model_name": "google/gemini-2.0-flash-001"
-    },
-    "IMAGE_VIEW": {
-      "model_name": "gpt-4.1"
+    "MODERATOR": {
+      "provider_name": "MODERATOR",
+      "api_base": "https://openrouter.ai/api/v1",
+      "api_key": "[MODERATOR_API_KEY]"
     }
   },
   "regex_replacements": {
@@ -212,18 +261,10 @@
     "^REWRITTEN:": ""
   },
   "fal_image_gen_config": {
-    "api_key": "[FAL_AI_API_KEY]",
     "enabled": false,
     "model_name": "sdxl-lightning",
     "n_images": 1,
-    "allow_nsfw": false
-  },
-  "lang": {
-    "rate_limited": "You are being rate limited",
-    "bot_typing": "Anarchy-Chan is typing...",
-    "error": ":x: Error",
-    "disclaimer": "-# ⚠️ This bot is __**testing**__ grounds for Paper-Chan. Expect misinformation, biases and nonsense in responses.",
-    "log_file_reply": "Verbose logs for message ID {} attached (only last 10 are stored)",
-    "invalid_log_request": "Expected a message ID before --l, not '{}'"
+    "allow_nsfw": false,
+    "api_key": "[FAL_AI_API_KEY]"
   }
 }

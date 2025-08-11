@@ -2,8 +2,8 @@ import discord
 import logging
 import reynard_ai.util.logging_setup as logs
 
+from dotenv import load_dotenv
 from discord.ext import commands
-
 from commands.history import ViewHistoryCommand
 from commands.sync_command_tree import SyncCommand
 from commands.image_gen_command import ImageGenCommand
@@ -18,6 +18,7 @@ from reynard_ai.chat.discord_chat_handler import DiscordChatHandler
 from reynard_ai.bot_data.knowledge import KnowledgeIndex, LongTermMemoryIndex
 
 logs.setup()
+load_dotenv()
 
 class DiscordBot:
     def __init__(self):
@@ -57,7 +58,7 @@ class DiscordBot:
             provider_store=provider_store,
             long_term_memory=self.long_term_memory,
             knowledge=self.knowledge,
-            discord_bot_id=self.bot.user.id,
+            account_id=self.bot.user.id,
             memory_length=50            
         )
         self.chat_handler = DiscordChatHandler(

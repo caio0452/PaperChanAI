@@ -18,14 +18,18 @@
   },
   "prompts": {
     "ATTACHMENT_DESCRIBE": {
-        "role": "user",
-        "content": [
-            {"type": "input_text", "text": "Describe this image in detail"},
-            {
-                "type": "input_image",
-                "image_url": "((attachment_url))"
-            }
-        ]
+      "messages": [
+          {
+          "role": "user",
+          "content": [
+              {"type": "input_text", "text": "Describe this image in detail"},
+              {
+                  "type": "input_image",
+                  "image_url": "((attachment_url))"
+              }
+          ]
+        }
+      ]
     },
     "PERSONALITY": {
       "messages": [

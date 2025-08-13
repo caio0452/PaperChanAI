@@ -10,9 +10,9 @@ from commands.image_gen_command import ImageGenCommand
 
 from reynard_ai.bot_data.ai_bot import AIBot
 from reynard_ai.bot_data.bot_profile import Profile
-from reynard_ai.chat.discord_bridge import DiscordBridge
 from reynard_ai.ai_apis.providers import ProviderDataStore
 from reynard_ai.chat.base_chat_handler import AsyncEventBus
+from reynard_ai.chat.discord_events_bridge import DiscordBridge
 from reynard_ai.util.environment_vars import get_environment_var
 from reynard_ai.chat.discord_chat_handler import DiscordChatHandler
 from reynard_ai.bot_data.knowledge import KnowledgeIndex, LongTermMemoryIndex

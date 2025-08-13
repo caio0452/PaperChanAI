@@ -17,6 +17,16 @@
     "medium_term_history_length": 0
   },
   "prompts": {
+    "ATTACHMENT_DESCRIBE": {
+        "role": "user",
+        "content": [
+            {"type": "input_text", "text": "Describe this image in detail"},
+            {
+                "type": "input_image",
+                "image_url": "((attachment_url))"
+            }
+        ]
+    },
     "PERSONALITY": {
       "messages": [
         {
@@ -200,15 +210,16 @@
       "model_name": "meta-llama/llama-3.1-8b-instruct",
       "temperature": 0
     },
-    "IMAGE_VIEW": {
-      "model_name": "gpt-4.1"
+    "ATTACHMENT_DESCRIBE": {
+      "model_name": "gpt-4.1",
+      "temperature": 0
     }
   },
   "lang": {
     "rate_limited": "You are being rate limited",
     "bot_typing": "Anarchy-Chan is typing...",
     "error": ":x: Error",
-    "disclaimer": "-# ⚠️ This bot is __**testing**__ grounds for Paper-Chan. Expect misinformation, biases and nonsense in responses.",
+    "disclaimer": "-# ⚠️ This bot is **testing grounds**, is untrustworthy and may be rude. Use <@1369091896957206569> for better answers | GPT-5",
     "log_file_reply": "Verbose logs for message ID {} attached (only last 10 are stored)",
     "invalid_log_request": "Expected a message ID before --l, not '{}'"
   },

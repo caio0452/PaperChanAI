@@ -15,7 +15,7 @@ from reynard_ai.chat.base_chat_handler import AsyncEventBus
 from reynard_ai.chat.discord_events_bridge import DiscordBridge
 from reynard_ai.util.environment_vars import get_environment_var
 from reynard_ai.chat.discord_chat_handler import DiscordChatHandler
-from reynard_ai.bot_data.knowledge import KnowledgeIndex, LongTermMemoryIndex
+from reynard_ai.bot_data.knowledge import KnowledgeIndex, LongTermMemoryIndex, EmbeddingsClient
 
 logs.setup()
 load_dotenv()
@@ -35,9 +35,15 @@ class DiscordBot:
 
     async def setup_chatbot(self):
         embeddings_provider = self.profile.providers["EMBEDDINGS"]
-        self.knowledge = await KnowledgeIndex.from_provider(embeddings_provider)
+        embedding_model_name = self.profile.get_request_params("EMBEDDINGS").model_name
+        embedding_client = EmbeddingsClient(
+            embeddings_provider, embedding_model_name
+        )
+
+        self.knowledge = await KnowledgeIndex.from_vectorizer(embedding_client)
+
         if self.profile.memory_settings.enable_long_term_memory:
-            self.long_term_memory: LongTermMemoryIndex | None = await LongTermMemoryIndex.from_provider(embeddings_provider)
+            self.long_term_memory: LongTermMemoryIndex | None = await LongTermMemoryIndex.from_vectorizer(embedding_client)
         else:
             self.long_term_memory = None
 
@@ -68,6 +74,7 @@ class DiscordBot:
         event_bus.start()
 
     async def setup_commands(self):
+        assert self.ai_bot_data is not None
         # await self.bot.add_cog(SearchCommand(bot=self.bot,conn=conn))
         # await self.bot.add_cog(FindClosePreset(presets_manager=await preset_queries.manager(OAICompatibleProviderData(embeddings_client)), bot=self.bot))
         await self.bot.add_cog(SyncCommand(bot=self.bot))

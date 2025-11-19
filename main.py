@@ -37,7 +37,9 @@ class DiscordBot:
         embeddings_provider = self.profile.providers["EMBEDDINGS"]
         embedding_model_name = self.profile.get_request_params("EMBEDDINGS").model_name
         embedding_client = EmbeddingsClient(
-            embeddings_provider, embedding_model_name
+            embeddings_provider, 
+            embedding_model_name,
+            4096 # TODO: Make configurable
         )
 
         self.knowledge = await KnowledgeIndex.from_vectorizer(embedding_client)

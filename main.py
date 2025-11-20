@@ -8,13 +8,10 @@ from commands.history import ViewHistoryCommand
 from commands.sync_command_tree import SyncCommand
 from commands.image_gen_command import ImageGenCommand
 
-from reynard_ai.bot_data.ai_bot import AIBot
 from reynard_ai.bot_data.bot_profile import Profile
 from reynard_ai.ai_apis.providers import ProviderDataStore
-from reynard_ai.chat.base_chat_handler import AsyncEventBus
-from reynard_ai.chat.discord_events_bridge import DiscordBridge
 from reynard_ai.util.environment_vars import get_environment_var
-from reynard_ai.chat.discord_chat_handler import DiscordChatHandler
+from reynard_ai.bot_data.ai_bot import ReynardAIBotData, ReynardChatBot
 from reynard_ai.bot_data.knowledge import KnowledgeIndex, LongTermMemoryIndex, EmbeddingsClient
 
 logs.setup()
@@ -27,7 +24,7 @@ class DiscordBot:
         self.bot = commands.Bot(command_prefix='r!', intents=intents)
         self.profile = Profile.from_file("profile.json")
         self.bot.event(self.on_ready)
-        self.ai_bot_data: AIBot | None = None
+        self.ai_bot_data: ReynardAIBotData | None = None
 
     def run(self):
         bot_token = get_environment_var('AI_BOT_TOKEN', required=True)
@@ -53,15 +50,9 @@ class DiscordBot:
         provider_store = ProviderDataStore(
             providers=provider_list
         ) # TODO: There should be required providers
-        if self.bot.user is None:
-            raise RuntimeError("Could not initialize bot: bot user is None")
-        event_bus = AsyncEventBus()
-        bridge = DiscordBridge(self.bot, bus=event_bus, known_chatrooms=[])
-        await self.bot.add_cog(
-            bridge,
-        )
-        self.ai_bot_data = AIBot(
-            name=self.profile.options.botname, 
+        assert self.bot.user is not None
+
+        self.ai_bot_data = ReynardAIBotData(
             profile=self.profile, 
             provider_store=provider_store,
             long_term_memory=self.long_term_memory,
@@ -69,11 +60,7 @@ class DiscordBot:
             account_id=self.bot.user.id,
             memory_length=50            
         )
-        self.chat_handler = DiscordChatHandler(
-            event_bus, 
-            self.ai_bot_data
-        )
-        event_bus.start()
+
 
     async def setup_commands(self):
         assert self.ai_bot_data is not None

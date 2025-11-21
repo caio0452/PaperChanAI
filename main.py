@@ -9,9 +9,10 @@ from commands.sync_command_tree import SyncCommand
 from commands.image_gen_command import ImageGenCommand
 
 from reynard_ai.bot_data.bot_profile import Profile
+from reynard_ai.chatbot.chatbot import ReynardChatBot
+from reynard_ai.bot_data.ai_bot import ReynardAIBotData
 from reynard_ai.ai_apis.providers import ProviderDataStore
 from reynard_ai.util.environment_vars import get_environment_var
-from reynard_ai.bot_data.ai_bot import ReynardAIBotData, ReynardChatBot
 from reynard_ai.bot_data.knowledge import KnowledgeIndex, LongTermMemoryIndex, EmbeddingsClient
 
 logs.setup()
@@ -60,7 +61,7 @@ class DiscordBot:
             account_id=self.bot.user.id,
             memory_length=50            
         )
-
+        await ReynardChatBot.create_discord_bot(self.bot, self.ai_bot_data)
 
     async def setup_commands(self):
         assert self.ai_bot_data is not None

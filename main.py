@@ -1,13 +1,16 @@
 import discord
 import logging
-import reynard_ai.util.logging_setup as logs
 
 from dotenv import load_dotenv
 from discord.ext import commands
 from commands.history import ViewHistoryCommand
 from commands.sync_command_tree import SyncCommand
-from commands.image_gen_command import ImageGenCommand
+from commands.fal.image_gen_command import ImageGenCommand
+from commands.fal.video_gen_command import VideoGenCommand
+from commands.fal.image_edit_command import ImageEditCommand
+from commands.fal.image_gen_hq_command import ImageGenHqCommand
 
+import reynard_ai.util.logging_setup as logs
 from reynard_ai.bot_data.bot_profile import Profile
 from reynard_ai.chatbot.chatbot import ReynardChatBot
 from reynard_ai.bot_data.ai_bot import ReynardAIBotData
@@ -22,7 +25,7 @@ class DiscordBot:
     def __init__(self):
         intents = discord.Intents.default()
         intents.message_content = True
-        self.bot = commands.Bot(command_prefix='r!', intents=intents)
+        self.bot = commands.Bot(command_prefix='p!', intents=intents)
         self.profile = Profile.from_file("profile.json")
         self.bot.event(self.on_ready)
         self.ai_bot_data: ReynardAIBotData | None = None
@@ -37,11 +40,10 @@ class DiscordBot:
         embedding_client = EmbeddingsClient(
             embeddings_provider, 
             embedding_model_name,
-            4096 # TODO: Make configurable
+            3072 # TODO: Make configurable
         )
-
+    
         self.knowledge = await KnowledgeIndex.from_vectorizer(embedding_client)
-
         if self.profile.memory_settings.enable_long_term_memory:
             self.long_term_memory: LongTermMemoryIndex | None = await LongTermMemoryIndex.from_vectorizer(embedding_client)
         else:
@@ -52,7 +54,7 @@ class DiscordBot:
             providers=provider_list
         ) # TODO: There should be required providers
         assert self.bot.user is not None
-
+            
         self.ai_bot_data = ReynardAIBotData(
             profile=self.profile, 
             provider_store=provider_store,
@@ -65,18 +67,17 @@ class DiscordBot:
 
     async def setup_commands(self):
         assert self.ai_bot_data is not None
-        # await self.bot.add_cog(SearchCommand(bot=self.bot,conn=conn))
-        # await self.bot.add_cog(FindClosePreset(presets_manager=await preset_queries.manager(OAICompatibleProviderData(embeddings_client)), bot=self.bot))
         await self.bot.add_cog(SyncCommand(bot=self.bot))
-        await self.bot.add_cog(ViewHistoryCommand(discord_bot=self.bot, ai_bot_data=self.ai_bot_data, bot_profile=self.profile))
-        # await self.bot.add_cog(TranslateCommand(bot=self.bot))
-        # await self.bot.add_cog(RewriteCommand(bot=self.bot))
         
-        if bot.profile.fal_image_gen_config.enabled:
+        if self.profile.fal_image_gen_config.enabled:
             await self.bot.add_cog(ImageGenCommand(discord_bot=self.bot, bot_profile=self.profile))
+            await self.bot.add_cog(ImageGenHqCommand(discord_bot=self.bot, bot_profile=self.profile))
+            await self.bot.add_cog(ImageEditCommand(discord_bot=self.bot, bot_profile=self.profile))
+            await self.bot.add_cog(VideoGenCommand(discord_bot=self.bot, bot_profile=self.profile))
+            await self.bot.add_cog(ViewHistoryCommand(discord_bot=self.bot, bot_data=self.ai_bot_data))
         else:
             logging.info("Image generation using FAL.AI is disabled")
-        pass
+    
 
     async def on_ready(self):
         logging.info("Creating chatbot...")

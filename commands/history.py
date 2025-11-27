@@ -1,16 +1,13 @@
 import discord
 from datetime import datetime
-from dotenv import load_dotenv
 from discord import app_commands
 from discord.ext import commands
 from reynard_ai.bot_data.ai_bot import ReynardAIBotData
-from reynard_ai.bot_data.bot_profile import Profile
 
 class ViewHistoryCommand(commands.Cog):
-    def __init__(self, discord_bot: commands.Bot, ai_bot_data: ReynardAIBotData, bot_profile: Profile) -> None:
+    def __init__(self, discord_bot: commands.Bot, bot_data: ReynardAIBotData) -> None:
         self.discord_bot = discord_bot
-        self.bot_profile = bot_profile
-        self.ai_bot_data = ai_bot_data
+        self.ai_bot_data =  bot_data
         
     @app_commands.command(
         name="chat_history", 
@@ -24,7 +21,7 @@ class ViewHistoryCommand(commands.Cog):
         )
         embed.set_author(name="Info")
 
-        last_msgs = self.ai_bot_data.short_term_memory.backing_history.as_list()[::-1]
+        last_msgs = self.ai_bot_data.short_term_memory._backing_history.as_list()[::-1]
         remaining_allowable_len = 3000
         MIN_MSGS_PER_EMBED = 5
         MAX_MSGS_PER_EMBED = 15

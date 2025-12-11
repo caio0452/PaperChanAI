@@ -1,8 +1,12 @@
 import discord
 import logging
+import os
+import hashlib
+import glob
 
 from dotenv import load_dotenv
 from discord.ext import commands
+from pydantic import BaseModel, Field
 from commands.history import ViewHistoryCommand
 from commands.sync_command_tree import SyncCommand
 from commands.fal.image_gen_command import ImageGenCommand
@@ -20,6 +24,29 @@ from reynard_ai.bot_data.knowledge import KnowledgeIndex, LongTermMemoryIndex, E
 
 logs.setup()
 load_dotenv()
+
+MANIFEST_FILE = "knowledge_manifest.json"
+KNOWLEDGE_DIR = "brain_content/knowledge"
+
+class ManifestFileEntry(BaseModel):
+    path: str
+    sha256_hexdigest: str 
+
+    @classmethod
+    def from_file(cls, path: str) -> "ManifestFileEntry":
+        with open(path, 'rb') as f:
+            file_data = f.read()
+            sha256_hexdigest = hashlib.sha256(file_data).hexdigest()
+        return cls(path=path, sha256_hexdigest=sha256_hexdigest)
+
+class KnowledgeManifest(BaseModel):
+    files: list[ManifestFileEntry] = Field(default_factory=list)
+    
+    def get_hash(self, path: str) -> str | None:
+        for entry in self.files:
+            if entry.path == path:
+                return entry.sha256_hexdigest
+        return None
 
 class DiscordBot:
     def __init__(self):
@@ -40,7 +67,7 @@ class DiscordBot:
         embedding_client = EmbeddingsClient(
             embeddings_provider, 
             embedding_model_name,
-            3072 # TODO: Make configurable
+            3072 # TODO: make configurable
         )
     
         self.knowledge = await KnowledgeIndex.from_vectorizer(embedding_client)
@@ -77,7 +104,34 @@ class DiscordBot:
             await self.bot.add_cog(ViewHistoryCommand(discord_bot=self.bot, bot_data=self.ai_bot_data))
         else:
             logging.info("Image generation using FAL.AI is disabled")
-    
+
+    async def index_knowledge(self):
+        if os.path.exists(MANIFEST_FILE):
+            with open(MANIFEST_FILE, 'r') as f:
+                manifest = KnowledgeManifest.model_validate_json(f.read())
+        else:
+            manifest = KnowledgeManifest()
+
+        current_file_paths = glob.glob(os.path.join(KNOWLEDGE_DIR, "**/*.txt"), recursive=True)
+        new_entries: list[ManifestFileEntry] = []
+        files_to_index: list[str] = []
+
+        for filepath in current_file_paths:
+            new_entry = ManifestFileEntry.from_file(path=filepath)
+            new_entries.append(new_entry)
+            stored_hash = manifest.get_hash(filepath)
+            if stored_hash != new_entry.sha256_hexdigest:
+                files_to_index.append(filepath)
+
+        new_manifest = KnowledgeManifest(files=new_entries)
+        if len(files_to_index) > 0:
+            logging.info(f"Indexing {len(files_to_index)} changed files...")
+            await self.knowledge.index_files(files_to_index)
+            with open(MANIFEST_FILE, 'w') as f:
+                f.write(new_manifest.model_dump_json(indent=4))
+        elif new_manifest != manifest:
+            with open(MANIFEST_FILE, 'w') as f:
+                f.write(new_manifest.model_dump_json(indent=4))
 
     async def on_ready(self):
         logging.info("Creating chatbot...")
@@ -85,7 +139,7 @@ class DiscordBot:
         logging.info("Setting up commands...")
         await self.setup_commands()
         logging.info("Indexing knowledge...")
-        await self.knowledge.index_from_folder("brain_content/knowledge")
+        await self.index_knowledge()
         logging.info(f'Logged in as {self.bot.user}')
 
 bot = DiscordBot()
